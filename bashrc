@@ -78,20 +78,29 @@ esac
 if [ -x /usr/bin/dircolors ]; then
     eval "`dircolors -b`"
     alias ls='ls --color=auto'
-    #alias dir='dir --color=auto'
-    #alias vdir='vdir --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
 
-    #alias grep='grep --color=auto'
-    #alias fgrep='fgrep --color=auto'
-    #alias egrep='egrep --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
 fi
 
 # some more ls aliases
 alias ll='ls -l'
-#alias la='ls -A'
-#alias l='ls -CF'
+alias la='ls -A'
+alias l='ls -CF'
+
 alias emacs='emacsclient -t'
+
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --"
+alias gs='git status -s'
+
+# Exports
+export TERM="xterm-256color"
+export EDITOR="emacsclient -t"
+
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -146,10 +155,5 @@ fi
 #source /etc/bash_completion.d/git-flow-completion.bash
 if [[ -s /home/serg/.rvm/scripts/rvm ]] ; then source /home/serg/.rvm/scripts/rvm ; fi
 
-PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
-
 fortune
 echo "____________________________________________________________________________"
-
-export TERM="xterm-256color"
-export EDITOR="emacsclient -t"

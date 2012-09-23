@@ -8,7 +8,7 @@
 
 dir=~/dotfiles                    # dotfiles directory
 olddir=~/dotfilesold             # old dotfiles backup directory
-files="bashrc"    # list of files/folders to symlink in homedir
+files="bashrc gitconfig"    # list of files/folders to symlink in homedir
 
 ##########
 
