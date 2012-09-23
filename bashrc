@@ -91,7 +91,7 @@ alias ll='ls -l'
 alias la='ls -A'
 alias l='ls -CF'
 
-alias emacs='emacsclient -t'
+# alias emacs='emacsclient -t'
 
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --"
 alias gs='git status -s'
@@ -99,6 +99,7 @@ alias gs='git status -s'
 # Exports
 export TERM="xterm-256color"
 export EDITOR="emacsclient -t"
+export ALTERNATE_EDITOR=""
 
 PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
 
