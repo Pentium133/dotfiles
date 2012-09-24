@@ -7,8 +7,8 @@
 ########## Variables
 
 dir=~/dotfiles                    # dotfiles directory
-olddir=~/dotfilesold             # old dotfiles backup directory
-files="bashrc gitconfig"    # list of files/folders to symlink in homedir
+olddir=~/dotfiles.old             # old dotfiles backup directory
+files="bashrc gitconfig emacs.d"    # list of files/folders to symlink in homedir
 
 ##########
 
