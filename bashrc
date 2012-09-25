@@ -90,11 +90,14 @@ fi
 alias ll='ls -l'
 alias la='ls -A'
 alias l='ls -CF'
+alias '..'='cd ..'
+alias '...'='cd ../..'
 
 # alias emacs='emacsclient -t'
 
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --"
 alias gs='git status -s'
+alias gd='git diff'
 
 # Exports
 export TERM="xterm-256color"
