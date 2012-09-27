@@ -93,7 +93,7 @@ alias l='ls -CF'
 alias '..'='cd ..'
 alias '...'='cd ../..'
 
-# alias emacs='emacsclient -t'
+# alias emacs='emacsclient -t --with-x-toolkit=lucid'
 
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --"
 alias gs='git status -s'
