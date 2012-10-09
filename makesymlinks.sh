@@ -8,7 +8,7 @@
 
 dir=~/dotfiles                    # dotfiles directory
 olddir=~/dotfiles.old             # old dotfiles backup directory
-files="bashrc gitconfig emacs.d gemrc awesomerc"    # list of files/folders to symlink in homedir
+files="bashrc gitconfig emacs.d gemrc Xresources"    # list of files/folders to symlink in homedir
 
 ##########
 
