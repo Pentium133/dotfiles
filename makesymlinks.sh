@@ -8,7 +8,7 @@
 
 dir=~/dotfiles                    # dotfiles directory
 olddir=~/dotfiles.old             # old dotfiles backup directory
-files="bashrc gitconfig emacs.d gemrc"    # list of files/folders to symlink in homedir
+files="bashrc gitconfig emacs.d gemrc awesomerc"    # list of files/folders to symlink in homedir
 
 ##########
 
@@ -29,3 +29,6 @@ for file in $files; do
     echo "Creating symlink to $file in home directory."
     ln -s $dir/$file ~/.$file
 done
+
+mv ~/.config/awesome ~/dotfiles_old/
+ln -s $dir/awesome ~/.config/awesome
