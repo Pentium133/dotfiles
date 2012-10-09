@@ -6,9 +6,12 @@ require("awful.rules")
 require("beautiful")
 -- Notification library
 require("naughty")
+require("vicious")
 
 -- Load Debian menu entries
 require("debian.menu")
+
+config_path = awful.util.getdir("config")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -37,7 +40,7 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
-beautiful.init("/usr/share/awesome/themes/default/theme.lua")
+beautiful.init(config_path ..  "/themes/default/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
 terminal = "x-terminal-emulator"
@@ -103,6 +106,13 @@ mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 -- }}}
 
 -- {{{ Wibox
+separator = widget({ type = "textbox" })
+separator.text  = " | "
+-- Network usage widget
+-- Initialize widget
+netwidget = widget({ type = "textbox" })
+ -- Register widget
+vicious.register(netwidget, vicious.widgets.net, '<span color="#CC9393">${eth0 down_kb}</span> <span color="#7F9F7F">${eth0 up_kb}</span>', 3)
 -- Create a textclock widget
 mytextclock = awful.widget.textclock({ align = "right" })
 
@@ -185,6 +195,9 @@ for s = 1, screen.count() do
         },
         mylayoutbox[s],
         mytextclock,
+        separator,
+        netwidget,
+        separator,
         s == 1 and mysystray or nil,
         mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
@@ -257,7 +270,9 @@ globalkeys = awful.util.table.join(
                   mypromptbox[mouse.screen].widget,
                   awful.util.eval, nil,
                   awful.util.getdir("cache") .. "/history_eval")
-              end)
+              end),
+    -- lock screen
+    awful.key({ "Alt" , "Control"}, "l", function () awful.util.spawn("xlock") end)
 )
 
 clientkeys = awful.util.table.join(
@@ -345,8 +360,9 @@ awful.rules.rules = {
     { rule = { class = "gimp" },
       properties = { floating = true } },
     -- Set Firefox to always map on tags number 2 of screen 1.
-    -- { rule = { class = "Firefox" },
-    --   properties = { tag = tags[1][2] } },
+    { rule = { class = "Firefox" }, properties = { tag = tags[1][2] } },
+    { rule = { class = "Emacs", instance = "emacs" }, properties = {tag = tags[1][1]}},
+    { rule = { class = "Skype" }, properties = {tag = tags[1][3]}},
 }
 -- }}}
 
