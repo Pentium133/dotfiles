@@ -47,7 +47,7 @@ layouts = {
 -- {{{ Tags
 tags = {
   names  = { "term", "emacs", "web", "mail", "im", 6, 7, "rss", "media" },
-  layout = { layouts[2], layouts[1], layouts[1], layouts[4], layouts[1],
+  layout = { layouts[2], layouts[1], layouts[1], layouts[4], layouts[6],
              layouts[6], layouts[6], layouts[5], layouts[6]
 }}
 
@@ -55,7 +55,7 @@ for s = 1, scount do
   tags[s] = awful.tag(tags.names, s, tags.layout)
   for i, t in ipairs(tags[s]) do
       awful.tag.setproperty(t, "mwfact", i==5 and 0.13  or  0.5)
-      awful.tag.setproperty(t, "hide",  (i==6 or  i==7) and true)
+      -- ssawful.tag.setproperty(t, "hide",  (i==6 or  i==7) and true)
   end
 end
 -- }}}
@@ -231,6 +231,26 @@ datewidget:buttons(awful.util.table.join(
 ))
 -- }}}
 
+-- Keyboard map indicator and changer
+kbdcfg = {}
+kbdcfg.cmd = "setxkbmap"
+kbdcfg.layout = { "us", "ru" }
+kbdcfg.current = 1  -- us is our default layout
+kbdcfg.widget = widget({ type = "textbox", align = "right" })
+kbdcfg.widget.text = " " .. kbdcfg.layout[kbdcfg.current] .. " "
+kbdcfg.switch = function ()
+   kbdcfg.current = kbdcfg.current % #(kbdcfg.layout) + 1
+   local t = " " .. kbdcfg.layout[kbdcfg.current] .. " "
+   kbdcfg.widget.text = t
+   os.execute( kbdcfg.cmd .. t )
+end
+
+-- Mouse bindings
+kbdcfg.widget:buttons(awful.util.table.join(
+    awful.button({ }, 1, function () kbdcfg.switch() end)
+))
+
+
 -- {{{ System tray
 systray = widget({ type = "systray" })
 -- }}}
@@ -278,14 +298,13 @@ for s = 1, scount do
         },
         s == 1 and systray or nil,
         separator, datewidget, dateicon,
+        separator, kbdcfg.widget,
         separator, volwidget,  volbar.widget, volicon,
         separator, orgwidget,  orgicon,
-        separator, mailwidget, mailicon,
         separator, upicon,     netwidget, dnicon,
         separator, fs.s.widget, fs.h.widget, fs.r.widget, fs.b.widget, fsicon,
         separator, membar.widget, memicon,
-        separator, batwidget, baticon,
-        separator, tzswidget, cpugraph.widget, cpuicon,
+        separator, cpugraph.widget, cpuicon,
         separator, ["layout"] = awful.widget.layout.horizontal.rightleft
     }
 end
@@ -357,7 +376,7 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey, "Control" }, "n", awful.client.restore),
 
     -- Prompt
-    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
+    awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end),
 
     awful.key({ modkey }, "x",
               function ()
@@ -365,7 +384,10 @@ globalkeys = awful.util.table.join(
                   mypromptbox[mouse.screen].widget,
                   awful.util.eval, nil,
                   awful.util.getdir("cache") .. "/history_eval")
-              end)
+              end),
+    --Caps switches the current keyboard layout
+    awful.key({                   }, "Caps_Lock" , function () kbdcfg.switch() end)
+
 )
 
 clientkeys = awful.util.table.join(
