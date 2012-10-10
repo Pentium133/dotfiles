@@ -1,11 +1,12 @@
 -- {{{ License
 --
--- Awesome configuration, using awesome 3.4.10 on Ubuntu 11.10
---   * Tony N <tony@git-pull.com>
---
+-- Awesome configuration, using awesome 3.4.13 on Arch GNU/Linux
+--   * Adrian C. <anrxc@sysphere.org>
+
+-- Screenshot: http://sysphere.org/gallery/snapshots
+
 -- This work is licensed under the Creative Commons Attribution-Share
 -- Alike License: http://creativecommons.org/licenses/by-sa/3.0/
--- based off Adrian C. <anrxc@sysphere.org>'s rc.lua
 -- }}}
 
 
@@ -13,92 +14,49 @@
 require("awful")
 require("awful.rules")
 require("awful.autofocus")
-require("naughty")
 -- User libraries
-require("vicious") -- ./vicious
-require("helpers") -- helpers.lua
+vicious = require("vicious")
+scratch = require("scratch")
 -- }}}
 
--- {{{ Default configuration
-altkey = "Mod1"
-modkey = "Mod4" -- your windows/apple key
-
-terminal = whereis_app('urxvtcd') and 'urxvtcd' or 'x-terminal-emulator' -- also accepts full path
-editor = os.getenv("EDITOR") or "vim"
-editor_cmd = terminal .. " -e " .. editor
-
-wallpaper_app = "feh" -- if you want to check for app before trying
-wallpaper_dir = os.getenv("HOME") .. "/Pictures/Wallpaper" -- wallpaper dir
-
--- taglist numerals
---- arabic, chinese, {east|persian}_arabic, roman, thai, random
-taglist_numbers = "chinese" -- we support arabic (1,2,3...),
-
-cpugraph_enable = true -- Show CPU graph
-cputext_format = " $1%" -- %1 average cpu, %[2..] every other thread individually
-
-membar_enable = true -- Show memory bar
-memtext_format = " $1%" -- %1 percentage, %2 used %3 total %4 free
-
-date_format = "%a %m/%d/%Y %l:%M%p" -- refer to http://en.wikipedia.org/wiki/Date_(Unix) specifiers
-
-networks = {'eth0'} -- add your devices network interface here netwidget, only shows first one thats up.
-
-require_safe('personal')
-
--- Create personal.lua in this same directory to override these defaults
-
-
--- }}}
 
 -- {{{ Variable definitions
-local wallpaper_cmd = "find " .. wallpaper_dir .. " -type f -name '*.jpg'  -print0 | shuf -n1 -z | xargs -0 feh --bg-scale"
+local altkey = "Mod1"
+local modkey = "Mod4"
+
 local home   = os.getenv("HOME")
 local exec   = awful.util.spawn
 local sexec  = awful.util.spawn_with_shell
+local scount = screen.count()
 
 -- Beautiful theme
-beautiful.init(awful.util.getdir("config") .. "/themes/zhongguo/zhongguo.lua")
+beautiful.init(home .. "/.config/awesome/zenburn.lua")
 
 -- Window management layouts
 layouts = {
-  awful.layout.suit.tile,
-  awful.layout.suit.tile.bottom,
-  awful.layout.suit.tile.top,
-  --awful.layout.suit.fair,
-  awful.layout.suit.max,
-  awful.layout.suit.magnifier,
-  --awful.layout.suit.floating
+  awful.layout.suit.tile,        -- 1
+  awful.layout.suit.tile.bottom, -- 2
+  awful.layout.suit.fair,        -- 3
+  awful.layout.suit.max,         -- 4
+  awful.layout.suit.magnifier,   -- 5
+  awful.layout.suit.floating     -- 6
 }
 -- }}}
+
 
 -- {{{ Tags
+tags = {
+  names  = { "term", "emacs", "web", "mail", "im", 6, 7, "rss", "media" },
+  layout = { layouts[2], layouts[1], layouts[1], layouts[4], layouts[1],
+             layouts[6], layouts[6], layouts[5], layouts[6]
+}}
 
--- Taglist numerals
-taglist_numbers_langs = { 'arabic', 'chinese', 'east_arabic', 'persian_arabic', }
-taglist_numbers_sets = {
-	arabic={ 1, 2, 3, 4, 5, 6, 7, 8, 9 },
-	chinese={"一", "二", "三", "四", "五", "六", "七", "八", "九", "十"},
-	east_arabic={'١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'}, -- '٠' 0
-	persian_arabic={'٠', '١', '٢', '٣', '۴', '۵', '۶', '٧', '٨', '٩'},
-	roman={'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'},
-	thai={'๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙', '๑๐'},
-}
--- }}}
-
-tags = {}
-for s = 1, screen.count() do
-    -- Each screen has its own tag table.
-      --tags[s] = awful.tag({"一", "二", "三", "四", "五", "六", "七", "八", "九", "十"}, s, layouts[1])
-      --tags[s] = awful.tag(taglist_numbers_sets[taglist_numbers], s, layouts[1])
-	if taglist_numbers == 'random' then
-		math.randomseed(os.time())
-		local taglist = taglist_numbers_sets[taglist_numbers_langs[math.random(table.getn(taglist_numbers_langs))]]
-		tags[s] = awful.tag(taglist, s, layouts[1])
-	else
-		tags[s] = awful.tag(taglist_numbers_sets[taglist_numbers], s, layouts[1])
-	end
-    --tags[s] = awful.tag({ 1, 2, 3, 4, 5, 6, 7, 8, 9 }, s, layouts[1])
+for s = 1, scount do
+  tags[s] = awful.tag(tags.names, s, tags.layout)
+  for i, t in ipairs(tags[s]) do
+      awful.tag.setproperty(t, "mwfact", i==5 and 0.13  or  0.5)
+      awful.tag.setproperty(t, "hide",  (i==6 or  i==7) and true)
+  end
 end
 -- }}}
 
@@ -110,93 +68,46 @@ end
 -- {{{ Reusable separator
 separator = widget({ type = "imagebox" })
 separator.image = image(beautiful.widget_sep)
-
-spacer = widget({ type = "textbox" })
-spacer.width = 3
 -- }}}
 
--- {{{ CPU usage
-
--- cpu icon
+-- {{{ CPU usage and temperature
 cpuicon = widget({ type = "imagebox" })
 cpuicon.image = image(beautiful.widget_cpu)
-
--- check for cpugraph_enable == true in config
-if cpugraph_enable then
-	-- Initialize widget
-	cpugraph  = awful.widget.graph()
-
-	-- Graph properties
-	cpugraph:set_width(40):set_height(16)
-	cpugraph:set_background_color(beautiful.fg_off_widget)
-	cpugraph:set_gradient_angle(0):set_gradient_colors({
-	   beautiful.fg_end_widget, beautiful.fg_center_widget, beautiful.fg_widget
-	})
-
-	-- Register graph widget
-	vicious.register(cpugraph,  vicious.widgets.cpu,      "$1")
-end
-
--- cpu text widget
-cpuwidget = widget({ type = "textbox" }) -- initialize
-vicious.register(cpuwidget, vicious.widgets.cpu, cputext_format, 3) -- register
-
--- temperature
+-- Initialize widgets
+cpugraph  = awful.widget.graph()
 tzswidget = widget({ type = "textbox" })
-vicious.register(tzswidget, vicious.widgets.thermal,
-	function (widget, args)
-		if args[1] > 0 then
-			tzfound = true
-			return " " .. args[1] .. "C°"
-		else return "" 
-		end
-	end
-	, 19, "thermal_zone0")
-
+-- Graph properties
+cpugraph:set_width(40):set_height(14)
+cpugraph:set_background_color(beautiful.fg_off_widget)
+cpugraph:set_gradient_angle(0):set_gradient_colors({
+   beautiful.fg_end_widget, beautiful.fg_center_widget, beautiful.fg_widget
+}) -- Register widgets
+vicious.register(cpugraph,  vicious.widgets.cpu,      "$1")
+vicious.register(tzswidget, vicious.widgets.thermal, " $1C", 19, "thermal_zone0")
 -- }}}
-
 
 -- {{{ Battery state
-
+baticon = widget({ type = "imagebox" })
+baticon.image = image(beautiful.widget_bat)
 -- Initialize widget
 batwidget = widget({ type = "textbox" })
-baticon = widget({ type = "imagebox" })
-
 -- Register widget
-vicious.register(batwidget, vicious.widgets.bat,
-	function (widget, args)
-		if args[2] == 0 then return ""
-		else
-			baticon.image = image(beautiful.widget_bat)
-			return "<span color='white'>".. args[2] .. "%</span>"
-		end
-	end, 61, "BAT0"
-)
+vicious.register(batwidget, vicious.widgets.bat, "$1$2%", 61, "BAT0")
 -- }}}
 
-
 -- {{{ Memory usage
-
--- icon
 memicon = widget({ type = "imagebox" })
 memicon.image = image(beautiful.widget_mem)
-
-if membar_enable then
-	-- Initialize widget
-	membar = awful.widget.progressbar()
-	-- Pogressbar properties
-	membar:set_vertical(true):set_ticks(true)
-	membar:set_height(16):set_width(8):set_ticks_size(2)
-	membar:set_background_color(beautiful.fg_off_widget)
-	membar:set_gradient_colors({ beautiful.fg_widget,
-	   beautiful.fg_center_widget, beautiful.fg_end_widget
-	}) -- Register widget
-	vicious.register(membar, vicious.widgets.mem, "$1", 13)
-end
-
--- mem text output
-memtext = widget({ type = "textbox" })
-vicious.register(memtext, vicious.widgets.mem, memtext_format, 13)
+-- Initialize widget
+membar = awful.widget.progressbar()
+-- Pogressbar properties
+membar:set_vertical(true):set_ticks(true)
+membar:set_height(12):set_width(8):set_ticks_size(2)
+membar:set_background_color(beautiful.fg_off_widget)
+membar:set_gradient_colors({ beautiful.fg_widget,
+   beautiful.fg_center_widget, beautiful.fg_end_widget
+}) -- Register widget
+vicious.register(membar, vicious.widgets.mem, "$1", 13)
 -- }}}
 
 -- {{{ File system usage
@@ -204,54 +115,82 @@ fsicon = widget({ type = "imagebox" })
 fsicon.image = image(beautiful.widget_fs)
 -- Initialize widgets
 fs = {
-  r = awful.widget.progressbar(), s = awful.widget.progressbar()
+  b = awful.widget.progressbar(), r = awful.widget.progressbar(),
+  h = awful.widget.progressbar(), s = awful.widget.progressbar()
 }
 -- Progressbar properties
 for _, w in pairs(fs) do
   w:set_vertical(true):set_ticks(true)
-  w:set_height(16):set_width(5):set_ticks_size(2)
+  w:set_height(14):set_width(5):set_ticks_size(2)
   w:set_border_color(beautiful.border_widget)
   w:set_background_color(beautiful.fg_off_widget)
   w:set_gradient_colors({ beautiful.fg_widget,
      beautiful.fg_center_widget, beautiful.fg_end_widget
   }) -- Register buttons
   w.widget:buttons(awful.util.table.join(
-    awful.button({ }, 1, function () exec("dolphin", false) end)
+    awful.button({ }, 1, function () exec("rox", false) end)
   ))
 end -- Enable caching
 vicious.cache(vicious.widgets.fs)
 -- Register widgets
-vicious.register(fs.r, vicious.widgets.fs, "${/ used_p}",            599)
-vicious.register(fs.s, vicious.widgets.fs, "${/media/files used_p}", 599)
+vicious.register(fs.b, vicious.widgets.fs, "${/boot used_p}", 599)
+vicious.register(fs.r, vicious.widgets.fs, "${/ used_p}",     599)
+vicious.register(fs.h, vicious.widgets.fs, "${/home used_p}", 599)
+vicious.register(fs.s, vicious.widgets.fs, "${/mnt/storage used_p}", 599)
 -- }}}
 
 -- {{{ Network usage
-function print_net(name, down, up)
-	return '<span color="'
-	.. beautiful.fg_netdn_widget ..'">' .. down .. '</span> <span color="'
-	.. beautiful.fg_netup_widget ..'">' .. up  .. '</span>'
-end
-
 dnicon = widget({ type = "imagebox" })
 upicon = widget({ type = "imagebox" })
-
+dnicon.image = image(beautiful.widget_net)
+upicon.image = image(beautiful.widget_netup)
 -- Initialize widget
 netwidget = widget({ type = "textbox" })
 -- Register widget
-vicious.register(netwidget, vicious.widgets.net,
-	function (widget, args)
-		for _,device in pairs(networks) do
-			if tonumber(args["{".. device .." carrier}"]) > 0 then
-				netwidget.found = true
-				dnicon.image = image(beautiful.widget_net)
-				upicon.image = image(beautiful.widget_netup)
-				return print_net(device, args["{"..device .." down_kb}"], args["{"..device.." up_kb}"])
-			end
-		end
-	end, 3)
+vicious.register(netwidget, vicious.widgets.net, '<span color="'
+  .. beautiful.fg_netdn_widget ..'">${eth0 down_kb}</span> <span color="'
+  .. beautiful.fg_netup_widget ..'">${eth0 up_kb}</span>', 3)
 -- }}}
 
+-- {{{ Mail subject
+mailicon = widget({ type = "imagebox" })
+mailicon.image = image(beautiful.widget_mail)
+-- Initialize widget
+mailwidget = widget({ type = "textbox" })
+-- Register widget
+vicious.register(mailwidget, vicious.widgets.mbox, "$1", 181, {home .. "/mail/Inbox", 15})
+-- Register buttons
+mailwidget:buttons(awful.util.table.join(
+  awful.button({ }, 1, function () exec("urxvt -T Alpine -e alpine.exp") end)
+))
+-- }}}
 
+-- {{{ Org-mode agenda
+orgicon = widget({ type = "imagebox" })
+orgicon.image = image(beautiful.widget_org)
+-- Initialize widget
+orgwidget = widget({ type = "textbox" })
+-- Configure widget
+local orgmode = {
+  files = { home.."/.org/computers.org",
+    home.."/.org/index.org", home.."/.org/personal.org",
+  },
+  color = {
+    past   = '<span color="'..beautiful.fg_urgent..'">',
+    today  = '<span color="'..beautiful.fg_normal..'">',
+    soon   = '<span color="'..beautiful.fg_widget..'">',
+    future = '<span color="'..beautiful.fg_netup_widget..'">'
+}} -- Register widget
+vicious.register(orgwidget, vicious.widgets.org,
+  orgmode.color.past..'$1</span>-'..orgmode.color.today .. '$2</span>-' ..
+  orgmode.color.soon..'$3</span>-'..orgmode.color.future.. '$4</span>', 601,
+  orgmode.files
+) -- Register buttons
+orgwidget:buttons(awful.util.table.join(
+  awful.button({ }, 1, function () exec("emacsclient --eval '(org-agenda-list)'") end),
+  awful.button({ }, 3, function () exec("emacsclient --eval '(make-remember-frame)'") end)
+))
+-- }}}
 
 -- {{{ Volume level
 volicon = widget({ type = "imagebox" })
@@ -261,7 +200,7 @@ volbar    = awful.widget.progressbar()
 volwidget = widget({ type = "textbox" })
 -- Progressbar properties
 volbar:set_vertical(true):set_ticks(true)
-volbar:set_height(16):set_width(8):set_ticks_size(2)
+volbar:set_height(12):set_width(8):set_ticks_size(2)
 volbar:set_background_color(beautiful.fg_off_widget)
 volbar:set_gradient_colors({ beautiful.fg_widget,
    beautiful.fg_center_widget, beautiful.fg_end_widget
@@ -273,8 +212,8 @@ vicious.register(volwidget, vicious.widgets.volume, " $1%", 2, "PCM")
 -- Register buttons
 volbar.widget:buttons(awful.util.table.join(
    awful.button({ }, 1, function () exec("kmix") end),
-   awful.button({ }, 4, function () exec("amixer -q set PCM 2dB+", false) vicious.force({volbar, volwidget}) end),
-   awful.button({ }, 5, function () exec("amixer -q set PCM 2dB-", false) vicious.force({volbar, volwidget}) end)
+   awful.button({ }, 4, function () exec("amixer -q set PCM 2dB+", false) end),
+   awful.button({ }, 5, function () exec("amixer -q set PCM 2dB-", false) end)
 )) -- Register assigned buttons
 volwidget:buttons(volbar.widget:buttons())
 -- }}}
@@ -285,26 +224,12 @@ dateicon.image = image(beautiful.widget_date)
 -- Initialize widget
 datewidget = widget({ type = "textbox" })
 -- Register widget
-vicious.register(datewidget, vicious.widgets.date, date_format, 61)
+vicious.register(datewidget, vicious.widgets.date, "%R", 61)
+-- Register buttons
+datewidget:buttons(awful.util.table.join(
+  awful.button({ }, 1, function () exec("pylendar.py") end)
+))
 -- }}}
-
--- {{{ mpd
-
-if whereis_app('curl') and whereis_app('mpd') then
-	mpdwidget = widget({ type = "textbox" })
-	vicious.register(mpdwidget, vicious.widgets.mpd,
-		function (widget, args)
-			if args["{state}"] == "Stop" or args["{state}"] == "Pause" or args["{state}"] == "N/A"
-				or (args["{Artist}"] == "N/A" and args["{Title}"] == "N/A") then return ""
-			else return '<span color="white">музыка:</span> '..
-			     args["{Artist}"]..' - '.. args["{Title}"]
-			end
-		end
-	)
-end
-
--- }}}
-
 
 -- {{{ System tray
 systray = widget({ type = "systray" })
@@ -325,8 +250,7 @@ taglist.buttons = awful.util.table.join(
     awful.button({ },        5, awful.tag.viewprev
 ))
 
-
-for s = 1, screen.count() do
+for s = 1, scount do
     -- Create a promptbox
     promptbox[s] = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright })
     -- Create a layoutbox
@@ -342,29 +266,27 @@ for s = 1, screen.count() do
     taglist[s] = awful.widget.taglist(s, awful.widget.taglist.label.all, taglist.buttons)
     -- Create the wibox
     wibox[s] = awful.wibox({      screen = s,
-        fg = beautiful.fg_normal, height = 16,
+        fg = beautiful.fg_normal, height = 12,
         bg = beautiful.bg_normal, position = "top",
-        border_color = beautiful.border_normal,
+        border_color = beautiful.border_focus,
         border_width = beautiful.border_width
     })
     -- Add widgets to the wibox
     wibox[s].widgets = {
         {   taglist[s], layoutbox[s], separator, promptbox[s],
-            mpdwidget and spacer, mpdwidget or nil,
             ["layout"] = awful.widget.layout.horizontal.leftright
         },
-        --s == screen.count() and systray or nil, -- show tray on last screen
-        s == 1 and systray or nil, -- only show tray on first screen
-        s == 1 and separator or nil, -- only show on first screen
-        datewidget, dateicon,
-        baticon.image and separator, batwidget, baticon or nil,
+        s == 1 and systray or nil,
+        separator, datewidget, dateicon,
         separator, volwidget,  volbar.widget, volicon,
-        dnicon.image and separator, upicon, netwidget, dnicon or nil,
-        separator, fs.r.widget, fs.s.widget, fsicon,
-        separator, memtext, membar_enable and membar.widget or nil, memicon,
-        separator, tzfound and tzswidget or nil,
-        cpugraph_enable and cpugraph.widget or nil, cpuwidget, cpuicon,
-        ["layout"] = awful.widget.layout.horizontal.rightleft
+        separator, orgwidget,  orgicon,
+        separator, mailwidget, mailicon,
+        separator, upicon,     netwidget, dnicon,
+        separator, fs.s.widget, fs.h.widget, fs.r.widget, fs.b.widget, fsicon,
+        separator, membar.widget, memicon,
+        separator, batwidget, baticon,
+        separator, tzswidget, cpugraph.widget, cpuicon,
+        separator, ["layout"] = awful.widget.layout.horizontal.rightleft
     }
 end
 -- }}}
@@ -419,25 +341,23 @@ globalkeys = awful.util.table.join(
         end),
 
     -- Standard program
-    awful.key({ modkey, "Shift"   }, "Return", function () awful.util.spawn(terminal) end),
+    awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
     awful.key({ modkey, "Control" }, "r", awesome.restart),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit),
 
     awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)    end),
     awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)    end),
-    awful.key({ modkey,           }, ",",     function () awful.tag.incnmaster( 1)      end),
-    awful.key({ modkey,           }, ".",     function () awful.tag.incnmaster(-1)      end),
+    awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1)      end),
+    awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
     awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1)         end),
     awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1)         end),
     awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
 
-    awful.key({ modkey }, "b", function ()
-         wibox[mouse.screen].visible = not wibox[mouse.screen].visible
-    end),
+    awful.key({ modkey, "Control" }, "n", awful.client.restore),
 
     -- Prompt
-    awful.key({ modkey },            "r",     function () promptbox[mouse.screen]:run() end),
+    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
 
     awful.key({ modkey }, "x",
               function ()
@@ -451,10 +371,17 @@ globalkeys = awful.util.table.join(
 clientkeys = awful.util.table.join(
     awful.key({ modkey,           }, "f",      function (c) c.fullscreen = not c.fullscreen  end),
     awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end),
-    awful.key({ modkey,           }, "t",  awful.client.floating.toggle                     ),
-    awful.key({ modkey,           }, "Return", function (c) c:swap(awful.client.getmaster()) end),
+    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ),
+    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
     awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ),
     awful.key({ modkey, "Shift"   }, "r",      function (c) c:redraw()                       end),
+    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end),
+    awful.key({ modkey,           }, "n",
+        function (c)
+            -- The client currently has the input focus, so it cannot be
+            -- minimized, since minimized clients can't have the focus.
+            c.minimized = true
+        end),
     awful.key({ modkey,           }, "m",
         function (c)
             c.maximized_horizontal = not c.maximized_horizontal
@@ -519,7 +446,23 @@ awful.rules.rules = {
       border_width = beautiful.border_width,
       border_color = beautiful.border_normal }
     },
+    { rule = { class = "Firefox",  instance = "Navigator" },
+      properties = { tag = tags[scount][3] } },
+    { rule = { class = "Emacs",    instance = "emacs" },
+      properties = { tag = tags[1][2] } },
+    { rule = { class = "Emacs",    instance = "_Remember_" },
+      properties = { floating = true }, callback = awful.titlebar.add  },
+    { rule = { class = "Xmessage", instance = "xmessage" },
+      properties = { floating = true }, callback = awful.titlebar.add  },
+    { rule = { instance = "plugin-container" },
+      properties = { floating = true }, callback = awful.titlebar.add  },
+    { rule = { class = "Akregator" },   properties = { tag = tags[scount][8]}},
+    { rule = { name  = "Alpine" },      properties = { tag = tags[1][4]} },
+    { rule = { class = "Gajim" },       properties = { tag = tags[1][5]} },
+    { rule = { class = "Ark" },         properties = { floating = true } },
+    { rule = { class = "Geeqie" },      properties = { floating = true } },
     { rule = { class = "ROX-Filer" },   properties = { floating = true } },
+    { rule = { class = "Pinentry.*" },  properties = { floating = true } },
 }
 -- }}}
 
@@ -562,7 +505,7 @@ client.add_signal("unfocus", function (c) c.border_color = beautiful.border_norm
 -- }}}
 
 -- {{{ Arrange signal handler
-for s = 1, screen.count() do screen[s]:add_signal("arrange", function ()
+for s = 1, scount do screen[s]:add_signal("arrange", function ()
     local clients = awful.client.visible(s)
     local layout = awful.layout.getname(awful.layout.get(s))
 
@@ -575,30 +518,3 @@ for s = 1, screen.count() do screen[s]:add_signal("arrange", function ()
 end
 -- }}}
 -- }}}
-
-x = 0
-
--- setup the timer
-mytimer = timer { timeout = x }
-mytimer:add_signal("timeout", function()
-
-  -- tell awsetbg to randomly choose a wallpaper from your wallpaper directory
-  if file_exists(wallpaper_dir) and whereis_app('feh') then
-	  os.execute(wallpaper_cmd)
-  end
-  -- stop the timer (we don't need multiple instances running at the same time)
-  mytimer:stop()
-
-  -- define the interval in which the next wallpaper change should occur in seconds
-  -- (in this case anytime between 10 and 20 minutes)
-  x = math.random( 600, 1200)
-
-  --restart the timer
-  mytimer.timeout = x
-  mytimer:start()
-end)
-
--- initial start when rc.lua is first run
-mytimer:start()
-
-require_safe('autorun')
