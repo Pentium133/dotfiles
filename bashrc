@@ -161,3 +161,5 @@ if [[ -s /home/serg/.rvm/scripts/rvm ]] ; then source /home/serg/.rvm/scripts/rv
 
 fortune
 echo "____________________________________________________________________________"
+
+setxkbmap -layout 'us,ru' -option 'grp:caps_toggle,grp_led: caps'
