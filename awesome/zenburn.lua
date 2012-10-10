@@ -8,13 +8,14 @@
 -- {{{ Main
 theme = {}
 theme.confdir       = awful.util.getdir("config")
-theme.wallpaper_cmd = { "/usr/bin/nitrogen --restore" }
---theme.wallpaper_cmd = { "awsetbg /usr/share/awesome/themes/zenburn/zenburn-background.png" }
+-- theme.wallpaper_cmd = { "/usr/bin/nitrogen --restore" }
+theme.wallpaper_cmd = { "awsetbg -T -r " .. os.getenv("HOME") .. "/Pictures/Wallpaper" }
+-- theme.wallpaper_cmd = { "awsetbg /home/serg/Pictures/f3dr_full.jpg" }
 -- }}}
 
 
 -- {{{ Styles
-theme.font      = "Profont 8"
+theme.font      = "DejaVu Sans Mono 8"
 
 -- {{{ Colors
 theme.fg_normal = "#DCDCCC"
@@ -28,6 +29,7 @@ theme.bg_urgent = theme.bg_normal
 -- {{{ Borders
 theme.border_width  = 1
 theme.border_focus  = "#6F6F6F"
+theme.border_focus  = "#7F9F7F"
 theme.border_normal = theme.bg_normal
 theme.border_marked = theme.fg_urgent
 -- }}}

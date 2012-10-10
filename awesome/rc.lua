@@ -29,6 +29,8 @@ local exec   = awful.util.spawn
 local sexec  = awful.util.spawn_with_shell
 local scount = screen.count()
 
+local terminal = "gnome-terminal"
+
 -- Beautiful theme
 beautiful.init(home .. "/.config/awesome/zenburn.lua")
 
@@ -47,7 +49,7 @@ layouts = {
 -- {{{ Tags
 tags = {
   names  = { "term", "emacs", "web", "mail", "im", 6, 7, "rss", "media" },
-  layout = { layouts[2], layouts[1], layouts[1], layouts[4], layouts[6],
+  layout = { layouts[2], layouts[1], layouts[1], layouts[4], layouts[5],
              layouts[6], layouts[6], layouts[5], layouts[6]
 }}
 
@@ -231,25 +233,6 @@ datewidget:buttons(awful.util.table.join(
 ))
 -- }}}
 
--- Keyboard map indicator and changer
-kbdcfg = {}
-kbdcfg.cmd = "setxkbmap"
-kbdcfg.layout = { "us", "ru" }
-kbdcfg.current = 1  -- us is our default layout
-kbdcfg.widget = widget({ type = "textbox", align = "right" })
-kbdcfg.widget.text = " " .. kbdcfg.layout[kbdcfg.current] .. " "
-kbdcfg.switch = function ()
-   kbdcfg.current = kbdcfg.current % #(kbdcfg.layout) + 1
-   local t = " " .. kbdcfg.layout[kbdcfg.current] .. " "
-   kbdcfg.widget.text = t
-   os.execute( kbdcfg.cmd .. t )
-end
-
--- Mouse bindings
-kbdcfg.widget:buttons(awful.util.table.join(
-    awful.button({ }, 1, function () kbdcfg.switch() end)
-))
-
 
 -- {{{ System tray
 systray = widget({ type = "systray" })
@@ -298,7 +281,6 @@ for s = 1, scount do
         },
         s == 1 and systray or nil,
         separator, datewidget, dateicon,
-        separator, kbdcfg.widget,
         separator, volwidget,  volbar.widget, volicon,
         separator, orgwidget,  orgicon,
         separator, upicon,     netwidget, dnicon,
@@ -470,10 +452,14 @@ awful.rules.rules = {
     },
     { rule = { class = "Firefox",  instance = "Navigator" },
       properties = { tag = tags[scount][3] } },
+    { rule = { class = "Thunderbird" },
+      properties = { tag = tags[scount][4] } },
     { rule = { class = "Emacs",    instance = "emacs" },
       properties = { tag = tags[1][2] } },
     { rule = { class = "Emacs",    instance = "_Remember_" },
       properties = { floating = true }, callback = awful.titlebar.add  },
+    { rule = { class = "Skype" },
+      properties = { tag = tags[scount][5] } },
     { rule = { class = "Xmessage", instance = "xmessage" },
       properties = { floating = true }, callback = awful.titlebar.add  },
     { rule = { instance = "plugin-container" },
